@@ -1,4 +1,3 @@
-import React from 'react';
 import { DateInput } from '../common/DateInput';
 import { NumberInput } from '../common/NumberInput';
 import { getCurrentMonthStart, addMonthsToDate } from '../../utils/dateUtils';

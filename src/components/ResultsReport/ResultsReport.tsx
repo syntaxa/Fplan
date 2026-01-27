@@ -1,4 +1,3 @@
-import React from 'react';
 import type { CalculationResult } from '../../types';
 import { SummarySection } from './SummarySection';
 import { CyclesDetailTable } from './CyclesDetailTable';

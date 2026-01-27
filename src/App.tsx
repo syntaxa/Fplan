@@ -6,7 +6,6 @@ import type { RatePeriod, CalculationResult } from './types';
 import {
   getCurrentMonthStart,
   addMonthsToDate,
-  monthsBetween,
   normalizeToMonthStart,
 } from './utils/dateUtils';
 
@@ -41,7 +40,8 @@ function App() {
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
   const [calculationError, setCalculationError] = useState<string | null>(null);
 
-  // Валидация данных
+  // Валидация данных (используется в useEffect)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const validateInputs = useCallback((): boolean => {
     const newErrors: typeof errors = {};
 
@@ -49,7 +49,6 @@ function App() {
       newErrors.initialAmount = 'Начальная сумма должна быть больше нуля';
     }
 
-    const minTargetDate = addMonthsToDate(getCurrentMonthStart(), 1);
     if (normalizeToMonthStart(targetDate) <= getCurrentMonthStart()) {
       newErrors.targetDate = 'Целевая дата должна быть в будущем';
     }
@@ -61,7 +60,6 @@ function App() {
     // Проверка покрытия всех дат ставками
     const start = getCurrentMonthStart();
     const end = normalizeToMonthStart(targetDate);
-    const totalMonths = monthsBetween(start, end);
     
     // Сортируем периоды по дате начала
     const sortedPeriods = [...ratePeriods].sort((a, b) =>
@@ -134,14 +132,51 @@ function App() {
     });
   }, [targetDate]);
 
-  // Выполнение расчета
-  const handleCalculate = useCallback(() => {
-    setCalculationError(null);
-    
-    if (!validateInputs()) {
+  // Выполнение расчета (функция сохранена для возможного будущего использования)
+  // const handleCalculate = useCallback(() => {
+  //   setCalculationError(null);
+  //   
+  //   if (!validateInputs()) {
+  //     return;
+  //   }
+
+  //   try {
+  //     const result = calculateSavings({
+  //       initialAmount,
+  //       targetDate,
+  //       monthlyContribution,
+  //       ratePeriods,
+  //     });
+  //     setCalculationResult(result);
+  //   } catch (error) {
+  //     setCalculationError(error instanceof Error ? error.message : 'Произошла ошибка при расчете');
+  //     setCalculationResult(null);
+  //   }
+  // }, [initialAmount, targetDate, monthlyContribution, ratePeriods, validateInputs]);
+
+  // Автоматический пересчет при изменении данных
+  React.useEffect(() => {
+    // Быстрая проверка валидности перед расчетом
+    if (initialAmount <= 0 || monthlyContribution < 0) {
+      setCalculationResult(null);
+      setCalculationError(null);
       return;
     }
 
+    const normalizedTargetDate = normalizeToMonthStart(targetDate);
+    if (normalizedTargetDate <= getCurrentMonthStart()) {
+      setCalculationResult(null);
+      setCalculationError(null);
+      return;
+    }
+
+    if (ratePeriods.length === 0) {
+      setCalculationResult(null);
+      setCalculationError(null);
+      return;
+    }
+
+    // Выполняем расчет
     try {
       const result = calculateSavings({
         initialAmount,
@@ -150,35 +185,16 @@ function App() {
         ratePeriods,
       });
       setCalculationResult(result);
+      setCalculationError(null);
+      
+      // Обновляем ошибки после успешного расчета
+      validateInputs();
     } catch (error) {
-      setCalculationError(error instanceof Error ? error.message : 'Произошла ошибка при расчете');
+      const errorMessage = error instanceof Error ? error.message : 'Произошла ошибка при расчете';
+      setCalculationError(errorMessage);
       setCalculationResult(null);
     }
   }, [initialAmount, targetDate, monthlyContribution, ratePeriods, validateInputs]);
-
-  // Автоматический расчет при изменении данных (опционально, можно убрать)
-  const shouldAutoCalculate = useMemo(() => {
-    return initialAmount > 0 && monthlyContribution >= 0 && 
-           normalizeToMonthStart(targetDate) > getCurrentMonthStart() &&
-           ratePeriods.length > 0;
-  }, [initialAmount, targetDate, monthlyContribution, ratePeriods]);
-
-  React.useEffect(() => {
-    if (shouldAutoCalculate && Object.keys(errors).length === 0) {
-      try {
-        const result = calculateSavings({
-          initialAmount,
-          targetDate,
-          monthlyContribution,
-          ratePeriods,
-        });
-        setCalculationResult(result);
-        setCalculationError(null);
-      } catch (error) {
-        // Тихо игнорируем ошибки при авторасчете
-      }
-    }
-  }, [initialAmount, targetDate, monthlyContribution, ratePeriods, shouldAutoCalculate, errors]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

@@ -1,12 +1,9 @@
 import React from 'react';
-import type { RatePeriod } from '../../types';
 
 interface RatePeriodSegmentProps {
-  period: RatePeriod;
   xStart: number;
   xEnd: number;
   yRate: number;
-  yMax: number;
   height: number;
   isHovered?: boolean;
   onMouseEnter?: () => void;
@@ -15,11 +12,9 @@ interface RatePeriodSegmentProps {
 }
 
 export function RatePeriodSegment({
-  period,
   xStart,
   xEnd,
   yRate,
-  yMax,
   height,
   isHovered = false,
   onMouseEnter,

@@ -39,9 +39,9 @@ export function RateChart({
   const [hoveredDividerIndex, setHoveredDividerIndex] = useState<number | null>(null);
   const [draggedPeriodId, setDraggedPeriodId] = useState<string | null>(null);
   const [draggedDividerIndex, setDraggedDividerIndex] = useState<number | null>(null);
-  const [dragStartY, setDragStartY] = useState<number>(0);
-  const [dragStartX, setDragStartX] = useState<number>(0);
-  const [dragStartRate, setDragStartRate] = useState<number>(0);
+  const [, setDragStartY] = useState<number>(0);
+  const [, setDragStartX] = useState<number>(0);
+  const [, setDragStartRate] = useState<number>(0);
   const [dragMousePosition, setDragMousePosition] = useState<{ x: number; y: number } | null>(null);
   const [dragCurrentRate, setDragCurrentRate] = useState<number | null>(null);
 
@@ -56,7 +56,7 @@ export function RateChart({
   // Вычисляем координаты для периода
   // Периоды идут последовательно без промежутков: если период заканчивается в марте,
   // следующий начинается в апреле
-  const getPeriodCoords = useCallback((period: RatePeriod, periodIndex: number) => {
+  const getPeriodCoords = useCallback((period: RatePeriod) => {
     const periodStart = normalizeToMonthStart(period.startMonth);
     const periodEnd = normalizeToMonthStart(period.endMonth);
     
@@ -361,8 +361,8 @@ export function RateChart({
         })}
 
         {/* Периоды с расширенными зонами чувствительности */}
-        {ratePeriods.map((period, index) => {
-          const { xStart, xEnd, y, yRate } = getPeriodCoords(period, index);
+        {ratePeriods.map((period) => {
+          const { xStart, xEnd, yRate } = getPeriodCoords(period);
           const periodWidth = xEnd - xStart;
           
           // Y координата линии графика (уровень ставки)
@@ -423,11 +423,9 @@ export function RateChart({
               )}
               {/* Визуальный сегмент графика */}
               <RatePeriodSegment
-                period={period}
                 xStart={xStart}
                 xEnd={xEnd}
                 yRate={yRate}
-                yMax={CHART_CONTENT_HEIGHT}
                 height={CHART_CONTENT_HEIGHT + CHART_MARGIN_TOP}
                 isHovered={hoveredPeriodId === period.id}
                 onMouseEnter={() => setHoveredPeriodId(period.id)}

@@ -1,4 +1,3 @@
-import React from 'react';
 import { RateChart } from '../RateChart/RateChart';
 import type { RatePeriod } from '../../types';
 

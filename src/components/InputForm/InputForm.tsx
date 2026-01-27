@@ -1,8 +1,6 @@
-import React from 'react';
 import { BasicParametersSection } from './BasicParametersSection';
 import { InterestRatesSection } from './InterestRatesSection';
 import type { RatePeriod } from '../../types';
-import { getCurrentMonthStart, addMonthsToDate } from '../../utils/dateUtils';
 
 interface InputFormProps {
   initialAmount: number;
